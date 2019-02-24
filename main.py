@@ -26,20 +26,21 @@ FLAGS = flags.FLAGS
 
 pp = pprint.PrettyPrinter()
 
+
 def main(_):
-  pp.pprint(flags.FLAGS.__flags)
+    pp.pprint(flags.FLAGS.__flags)
 
-  if FLAGS.fast:
-    FLAGS.checkpoint_dir = 'fast_{}'.format(FLAGS.checkpoint_dir)
-  if not os.path.exists(FLAGS.checkpoint_dir):
-    os.makedirs(FLAGS.checkpoint_dir)
-  if not os.path.exists(FLAGS.output_dir):
-    os.makedirs(FLAGS.output_dir)
+    if FLAGS.fast:
+        FLAGS.checkpoint_dir = 'fast_{}'.format(FLAGS.checkpoint_dir)
+    if not os.path.exists(FLAGS.checkpoint_dir):
+        os.makedirs(FLAGS.checkpoint_dir)
+    if not os.path.exists(FLAGS.output_dir):
+        os.makedirs(FLAGS.output_dir)
+
+    with tf.Session() as sess:
+        model = Model(sess, config=FLAGS)
+        model.run()
 
 
-  with tf.Session() as sess:
-    model = Model(sess, config=FLAGS)
-    model.run()
-    
 if __name__ == '__main__':
-  tf.app.run()
+    tf.app.run()
