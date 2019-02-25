@@ -161,25 +161,26 @@ class Model(object):
 
     def run_test(self):
         # 在test_input_setup中提取出image的Y通道数据下采样后归一化，进行reshape和padding=4
-        test_data, test_label = test_input_setup(self)
+        test_data_label_arr = test_input_setup(self)
 
         print("Testing...")
+        i = 0
+        for test_data, test_label in test_data_label_arr:
+            start_time = time.time()
+            result = np.clip(self.pred.eval({self.images: test_data, self.labels: test_label, self.batch: 1}), 0, 1)
+            passed = time.time() - start_time
+            img1 = tf.convert_to_tensor(test_label, dtype=tf.float32)
+            img2 = tf.convert_to_tensor(result, dtype=tf.float32)
+            psnr = self.sess.run(tf.image.psnr(img1, img2, 1))
+            ssim = self.sess.run(tf.image.ssim(img1, img2, 1))
+            print("Took %.3f seconds, PSNR: %.6f, SSIM: %.6f" % (passed, psnr, ssim))
 
-        start_time = time.time()
-        result = np.clip(self.pred.eval({self.images: test_data, self.labels: test_label, self.batch: 1}), 0, 1)
-        passed = time.time() - start_time
-        img1 = tf.convert_to_tensor(test_label, dtype=tf.float32)
-        img2 = tf.convert_to_tensor(result, dtype=tf.float32)
-        psnr = self.sess.run(tf.image.psnr(img1, img2, 1))
-        ssim = self.sess.run(tf.image.ssim(img1, img2, 1))
-        print("Took %.3f seconds, PSNR: %.6f, SSIM: %.6f" % (passed, psnr, ssim))
-
-        # 将Y通道处理后合并到原图的CbCr
-        result = merge(self, result)
-        image_path = os.path.join(os.getcwd(), self.output_dir)
-        image_path = os.path.join(image_path, "test_image.png")
-
-        array_image_save(result, image_path)
+            # 将Y通道处理后合并到原图的CbCr
+            result = merge(self, result, i)
+            image_path = os.path.join(os.getcwd(), self.output_dir)
+            image_path = os.path.join(image_path, "test_image_"+ str(i) +".png")
+            i = i+ 1
+            array_image_save(result, image_path)
 
     def save(self, step):
         model_name = self.model.name + ".model"

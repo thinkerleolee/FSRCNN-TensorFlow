@@ -18,6 +18,7 @@ FLAGS = tf.app.flags.FLAGS
 
 downsample = True
 
+TEST_SET = "Set5"
 
 def preprocess(path, scale=3, distort=False):
     """
@@ -99,7 +100,7 @@ def prepare_data(sess, dataset):
             data.extend(glob.glob(os.path.join(data_dir, files)))
         shuffle(data)
     else:
-        data_dir = os.path.join(os.sep, (os.path.join(os.getcwd(), dataset)), "Set5")
+        data_dir = os.path.join(os.sep, (os.path.join(os.getcwd(), dataset)), TEST_SET)
         data = sorted(glob.glob(os.path.join(data_dir, "*.bmp")))
 
     return data
@@ -124,7 +125,6 @@ def modcrop(image, scale=3):
         w = w - np.mod(w, scale)
         image = image[0:h, 0:w]
     return image
-
 
 def train_input_worker(args):
     image_data, config = args
@@ -257,26 +257,34 @@ def test_input_setup(config):
     # Load data path
     data = prepare_data(sess, dataset="Test")
 
-    input_, label_ = preprocess(data[2], config.scale)
+    input_label_array = []
+    for i in data:
+        input_, label_ = preprocess(i, config.scale)
+        input_label_array.append([input_, label_])
 
-    if len(input_.shape) == 3:
-        h, w, _ = input_.shape
-    else:
-        h, w = input_.shape
+    arrlabel_arrdata_array = []
 
-    arrdata = np.pad(input_.reshape([1, h, w, 1]), ((0, 0), (2, 2), (2, 2), (0, 0)), 'reflect')
+    for input_it, label_it in input_label_array:
+        if len(input_it.shape) == 3:
+            h, w, _ = input_it.shape
+        else:
+            h, w = input_it.shape
 
-    if len(label_.shape) == 3:
-        h, w, _ = label_.shape
-    else:
-        h, w = label_.shape
+        arrdata = np.pad(input_it.reshape([1, h, w, 1]), ((0, 0), (2, 2), (2, 2), (0, 0)), 'reflect')
 
-    arrlabel = label_.reshape([1, h, w, 1])
+        if len(label_it.shape) == 3:
+            h, w, _ = label_it.shape
+        else:
+            h, w = label_it.shape
 
-    return (arrdata, arrlabel)
+        arrlabel = label_it.reshape([1, h, w, 1])
+
+        arrlabel_arrdata_array.append([arrdata, arrlabel])
+
+    return arrlabel_arrdata_array
 
 
-def merge(config, Y):
+def merge(config, Y, index):
     """
     Merges super-resolved image with chroma components
     """
@@ -285,7 +293,7 @@ def merge(config, Y):
     Y = Y.round().astype(np.uint8)
 
     data = prepare_data(config.sess, dataset="Test")
-    src = Image.open(data[2]).convert('YCbCr')
+    src = Image.open(data[index]).convert('YCbCr')
     (width, height) = src.size
     if downsample is False:
         src = src.resize((width * config.scale, height * config.scale), Image.BICUBIC)
