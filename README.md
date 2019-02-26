@@ -10,15 +10,15 @@ TensorFlow implementation of the Fast Super-Resolution Convolutional Neural Netw
  * Wand (optional)
 
 ## Usage
-For training: `python main.py`
+For training: `python main.py --train True`
 <br>
-For testing: `python main.py --train False`
+For testing: `python main.py`
 
 To use FSCRNN-s instead of FSCRNN: `python main.py --fast True`
 
 Can specify epochs, learning rate, data directory, etc:
 <br>
-`python main.py --epoch 100 --learning_rate 0.0002 --data_dir Train`
+`python main.py --train True --epoch 100 --learning_rate 0.0002 --data_dir Train`
 <br>
 Check `main.py` for all the possible flags
 

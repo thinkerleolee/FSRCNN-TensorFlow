@@ -63,7 +63,7 @@ class Model(object):
 
         # 得到FSRCNN网络
         self.pred = self.model.model(self.fast)
-
+        print(self.pred)
         model_dir = "%s_%s_%s_%s" % (
             self.model.name.lower(), self.label_size, '-'.join(str(i) for i in self.model.model_params),
             "r" + str(self.radius))

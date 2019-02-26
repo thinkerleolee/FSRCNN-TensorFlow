@@ -18,7 +18,7 @@ FLAGS = tf.app.flags.FLAGS
 
 downsample = True
 
-TEST_SET = "Set5"
+TEST_SET = "720P"
 
 def preprocess(path, scale=3, distort=False):
     """
