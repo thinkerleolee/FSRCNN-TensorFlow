@@ -178,8 +178,8 @@ class Model(object):
             # 将Y通道处理后合并到原图的CbCr
             result = merge(self, result, i)
             image_path = os.path.join(os.getcwd(), self.output_dir)
-            image_path = os.path.join(image_path, "test_image_"+ str(i) +".png")
-            i = i+ 1
+            image_path = os.path.join(image_path, "test_image_" + str(i) + ".png")
+            i = i + 1
             array_image_save(result, image_path)
 
     def save(self, step):
@@ -202,3 +202,10 @@ class Model(object):
             return True
         else:
             return False
+
+    def save_model2pb(self, model_name):
+        from tensorflow.python.framework import graph_util
+        constant_graph = graph_util.convert_variables_to_constants(self.sess, self.sess.graph_def,
+                                                                   ['deconvolution_block/pixel_shuffle'])
+        with tf.gfile.FastGFile('model/' + model_name + '.pb', mode='wb') as f:
+            f.write(constant_graph.SerializeToString())
